@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}PAC{% endblock %} — PAC</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='estilos.css') }}">
+</head>
+<body>
+  <header class="topo">
+    <div class="topo-interno">
+      <span class="marca">PAC · Assembleias Condominiais</span>
+      {% if usuario_logado %}
+      <form method="post" action="{{ url_for('autenticacao.sair') }}" class="sessao">
+        <span class="sessao-nome">{{ usuario_logado.nome }}
+          <small>({{ 'Administrador' if usuario_logado.tipo == 'ADMINISTRADOR' else 'Proprietário' }})</small>
+        </span>
+        <button type="submit" class="botao botao-secundario">Sair</button>
+      </form>
+      {% endif %}
+    </div>
+  </header>
+
+  <main class="conteudo">
+    {% with mensagens = get_flashed_messages(with_categories=true) %}
+      {% for categoria, mensagem in mensagens %}
+        <p class="aviso aviso-{{ categoria }}">{{ mensagem }}</p>
+      {% endfor %}
+    {% endwith %}
+    {% block conteudo %}{% endblock %}
+  </main>
+</body>
+</html>

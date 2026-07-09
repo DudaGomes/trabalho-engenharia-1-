@@ -1,0 +1,144 @@
+{# Tela de Configuração de Votação (protótipo do UC4, ERSw 3.4.4).
+   Observação RN3 da ERSw: no formulário existem APENAS Salvar Votação e
+   Cancelar — o comando Iniciar aparece somente na listagem abaixo. #}
+{% extends "base.html" %}
+{% block titulo %}Configuração de Votação{% endblock %}
+
+{% block conteudo %}
+<section class="cartao">
+  <h1>{{ 'Alterar Votação' if votacao_em_edicao else 'Tela de Configuração de Votação' }}</h1>
+
+  <form method="post"
+        action="{{ url_for('votacoes.atualizar', votacao_id=votacao_em_edicao.id)
+                   if votacao_em_edicao
+                   else url_for('votacoes.criar', reuniao_id=reuniao.id) }}">
+
+    <label>Reunião*</label>
+    <input type="text" value="{{ reuniao.titulo }}" disabled>
+
+    <label for="item_pauta_id">Item de pauta</label>
+    <select id="item_pauta_id" name="item_pauta_id">
+      <option value="">(opcional)</option>
+      {% for item in itens %}
+      <option value="{{ item.id }}"
+        {{ 'selected' if formulario.item_pauta_id|string == item.id|string }}>
+        {{ loop.index }}. {{ item.titulo }}
+      </option>
+      {% endfor %}
+    </select>
+
+    <label for="pergunta">Pergunta da votação*</label>
+    <input type="text" id="pergunta" name="pergunta" required
+           placeholder="Aprova o orçamento anual?"
+           value="{{ formulario.pergunta or '' }}">
+
+    <label for="tipo_resposta">Tipo de resposta*</label>
+    <select id="tipo_resposta" name="tipo_resposta" required>
+      {% for valor, rotulo in ROTULOS_TIPO.items() %}
+      <option value="{{ valor }}"
+        {{ 'selected' if formulario.tipo_resposta == valor }}>{{ rotulo }}</option>
+      {% endfor %}
+    </select>
+
+    <div id="bloco-opcoes-fixas" class="dica" hidden>
+      Opções (fixas): Sim · Não · Abstenção
+    </div>
+
+    <div id="bloco-opcoes">
+      <label for="opcoes" id="rotulo-opcoes">Opções / Nomes (um por linha)</label>
+      <textarea id="opcoes" name="opcoes" rows="4"
+        placeholder="Construtora Alfa&#10;Construtora Beta&#10;Construtora Gama">{{ formulario.opcoes_texto or '' }}</textarea>
+    </div>
+
+    <label for="visibilidade">Visibilidade*</label>
+    <select id="visibilidade" name="visibilidade" required>
+      {% for valor, rotulo in ROTULOS_VISIBILIDADE.items() %}
+      <option value="{{ valor }}"
+        {{ 'selected' if formulario.visibilidade == valor }}>{{ rotulo }}</option>
+      {% endfor %}
+    </select>
+
+    <label for="duracao">Tempo da votação* (mm:ss, maior que 00:00)</label>
+    <input type="text" id="duracao" name="duracao" required
+           pattern="\d{1,2}:[0-5]\d" placeholder="05:00"
+           value="{{ formulario.duracao or '' }}">
+
+    <label for="quorum_minimo">Quórum mínimo (% do peso apto — opcional)</label>
+    <input type="text" id="quorum_minimo" name="quorum_minimo"
+           placeholder="50 (0% se em branco)"
+           value="{{ formulario.quorum_texto or '' }}">
+
+    <div class="acoes">
+      <button type="submit" class="botao botao-primario">Salvar Votação</button>
+      {# RN9 — Cancelar retorna sem salvar #}
+      <a href="{{ url_for('autenticacao.painel') }}" class="botao botao-neutro">Cancelar</a>
+    </div>
+  </form>
+</section>
+
+<section class="cartao">
+  <h2>Votações Configuradas para a Reunião</h2>
+  {% if votacoes %}
+  <div class="rolagem">
+  <table class="tabela">
+    <thead>
+      <tr><th>Pergunta</th><th>Tipo</th><th>Visib.</th><th>Status</th><th>Comandos</th></tr>
+    </thead>
+    <tbody>
+      {% for v in votacoes %}
+      <tr>
+        <td>{{ v.pergunta }}</td>
+        <td>{{ ROTULOS_TIPO[v.tipo_resposta] }}</td>
+        <td>{{ v.visibilidade.title() }}</td>
+        <td><span class="etiqueta etiqueta-{{ v.status | lower }}">{{ v.status.title() }}</span></td>
+        <td class="comandos">
+          {% if v.status == StatusVotacao.CONFIGURADA %}
+            <a class="botao botao-neutro botao-mini"
+               href="{{ url_for('votacoes.tela_editar', votacao_id=v.id) }}">Alterar</a>
+            {# RN3 — Iniciar fica AQUI, fora do formulário de configuração #}
+            <form method="post" action="{{ url_for('votacoes.iniciar', votacao_id=v.id) }}">
+              <button type="submit" class="botao botao-primario botao-mini">Iniciar</button>
+            </form>
+            <form method="post" action="{{ url_for('votacoes.excluir', votacao_id=v.id) }}"
+                  onsubmit="return confirm('Excluir esta votação?')">
+              <button type="submit" class="botao botao-perigo botao-mini">Excluir</button>
+            </form>
+          {% elif v.status == StatusVotacao.ATIVA %}
+            <a class="botao botao-primario botao-mini"
+               href="{{ url_for('votacoes.conducao', votacao_id=v.id) }}">Conduzir</a>
+          {% else %}
+            <a class="botao botao-neutro botao-mini"
+               href="{{ url_for('resultados.resultado', votacao_id=v.id) }}">Resultado</a>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+  <p>Nenhuma votação configurada.</p>
+  {% endif %}
+</section>
+
+<script>
+  // Apenas comportamento de TELA (nenhuma regra de negócio): alterna o campo
+  // de opções conforme o tipo — Sim/Não/Abstenção usa opções fixas (RN7).
+  const seletorTipo = document.getElementById('tipo_resposta');
+  const blocoOpcoes = document.getElementById('bloco-opcoes');
+  const blocoFixas = document.getElementById('bloco-opcoes-fixas');
+  const rotuloOpcoes = document.getElementById('rotulo-opcoes');
+
+  function ajustarCampos() {
+    const tipo = seletorTipo.value;
+    const usaOpcoes = tipo !== 'SIM_NAO_ABSTENCAO';
+    blocoOpcoes.hidden = !usaOpcoes;
+    blocoFixas.hidden = usaOpcoes;
+    rotuloOpcoes.textContent = tipo === 'ELEICAO_NOMES'
+      ? 'Nomes (candidatos — um por linha)'
+      : 'Opções de voto (uma por linha)';
+  }
+  seletorTipo.addEventListener('change', ajustarCampos);
+  ajustarCampos();
+</script>
+{% endblock %}

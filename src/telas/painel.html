@@ -1,0 +1,83 @@
+{# Painel pós-login — UC1 direciona cada perfil às suas funcionalidades #}
+{% extends "base.html" %}
+{% block titulo %}Painel{% endblock %}
+
+{% block conteudo %}
+{% if not reuniao %}
+  <p class="aviso aviso-erro">Nenhuma reunião cadastrada — execute o seed.</p>
+{% else %}
+<section class="cartao">
+  <h1>{{ reuniao.titulo }}</h1>
+  <dl class="ficha">
+    <dt>Data e horário</dt><dd>{{ reuniao.data | data_br }} às {{ reuniao.horario }}</dd>
+    <dt>Local / Link</dt><dd>{{ reuniao.local }}</dd>
+    <dt>Status</dt><dd>{{ reuniao.status.replace('_', ' ').title() }}</dd>
+    {% if peso_do_usuario %}
+    <dt>Seus lotes</dt><dd>{{ peso_do_usuario.lotes }}</dd>
+    <dt>Peso dos seus lotes</dt><dd>{{ peso_do_usuario.peso | peso_br }}</dd>
+    {% endif %}
+  </dl>
+</section>
+
+<section class="cartao">
+  <h2>Itens da Pauta</h2>
+  {% for entrada in itens %}
+  <article class="item-pauta">
+    <strong>{{ loop.index }}. {{ entrada.item.titulo }}</strong>
+    <p>{{ entrada.item.descricao }}</p>
+    {% for a in entrada.anexos %}<span class="anexo">📎 {{ a.nome_arquivo }}</span>{% endfor %}
+  </article>
+  {% else %}
+  <p>Sem itens de pauta.</p>
+  {% endfor %}
+</section>
+
+<section class="cartao">
+  <h2>Votações</h2>
+  {% if usuario_logado.tipo == 'ADMINISTRADOR' and reuniao %}
+  <p><a class="botao botao-primario"
+        href="{{ url_for('votacoes.tela_nova', reuniao_id=reuniao.id) }}">Nova Votação</a></p>
+  {% endif %}
+  {% if votacoes %}
+  <div class="rolagem">
+  <table class="tabela">
+    <thead>
+      <tr><th>Pergunta</th><th>Tipo</th><th>Visib.</th><th>Status</th><th>Comandos</th></tr>
+    </thead>
+    <tbody>
+      {% for v in votacoes %}
+      <tr>
+        <td>{{ v.pergunta }}</td>
+        <td>{{ ROTULOS_TIPO[v.tipo_resposta] }}</td>
+        <td>{{ v.visibilidade.title() }}</td>
+        <td><span class="etiqueta etiqueta-{{ v.status | lower }}">{{ v.status.title() }}</span></td>
+        <td class="comandos">
+          {% if usuario_logado.tipo == 'ADMINISTRADOR' %}
+            {% if v.status == StatusVotacao.ATIVA %}
+            <a class="botao botao-primario botao-mini"
+               href="{{ url_for('votacoes.conducao', votacao_id=v.id) }}">Conduzir</a>
+            {% elif v.status == StatusVotacao.ENCERRADA %}
+            <a class="botao botao-neutro botao-mini"
+               href="{{ url_for('resultados.resultado', votacao_id=v.id) }}">Resultado</a>
+            {% endif %}
+          {% else %}
+            {% if v.status == StatusVotacao.ATIVA %}
+            <a class="botao botao-primario botao-mini"
+               href="{{ url_for('votacoes.tela_votar', votacao_id=v.id) }}">Votar</a>
+            {% elif v.status == StatusVotacao.ENCERRADA %}
+            <a class="botao botao-neutro botao-mini"
+               href="{{ url_for('resultados.resultado', votacao_id=v.id) }}">Resultado</a>
+            {% endif %}
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+  <p>Nenhuma votação para esta reunião.</p>
+  {% endif %}
+</section>
+{% endif %}
+{% endblock %}

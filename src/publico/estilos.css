@@ -1,0 +1,144 @@
+/* PAC — estilos mobile-first (RNF1: responsivo a partir de 360 px).
+   Base pensada para 360 px; ajustes para telas maiores via min-width. */
+
+:root {
+  --cor-primaria: #1d4ed8;
+  --cor-primaria-escura: #1e40af;
+  --cor-fundo: #f1f5f9;
+  --cor-cartao: #ffffff;
+  --cor-texto: #0f172a;
+  --cor-texto-suave: #475569;
+  --cor-borda: #e2e8f0;
+  --cor-erro: #b91c1c;
+  --cor-erro-fundo: #fee2e2;
+  --cor-sucesso: #166534;
+  --cor-sucesso-fundo: #dcfce7;
+  --raio: 10px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  background: var(--cor-fundo);
+  color: var(--cor-texto);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+/* ── Topo ──────────────────────────────────────────────────────────────── */
+.topo { background: var(--cor-primaria); color: #fff; }
+.topo-interno {
+  max-width: 960px; margin: 0 auto; padding: 0.6rem 1rem;
+  display: flex; flex-wrap: wrap; gap: 0.5rem;
+  align-items: center; justify-content: space-between;
+}
+.marca { font-weight: 700; }
+.sessao { display: flex; align-items: center; gap: 0.6rem; margin: 0; }
+.sessao-nome small { opacity: 0.85; }
+
+/* ── Conteúdo ──────────────────────────────────────────────────────────── */
+.conteudo { max-width: 960px; margin: 0 auto; padding: 1rem; }
+
+.cartao {
+  background: var(--cor-cartao);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+.cartao h1 { font-size: 1.25rem; margin: 0 0 0.75rem; }
+.cartao h2 { font-size: 1.05rem; margin: 0 0 0.75rem; }
+
+.cartao-login { max-width: 420px; margin: 2rem auto; }
+
+/* ── Formulários ───────────────────────────────────────────────────────── */
+label { display: block; font-weight: 600; margin: 0.75rem 0 0.25rem; }
+input, select, textarea {
+  width: 100%; padding: 0.6rem;
+  border: 1px solid var(--cor-borda); border-radius: var(--raio);
+  font-size: 1rem; background: #fff;
+}
+input:focus, select:focus { outline: 2px solid var(--cor-primaria); }
+
+.botao {
+  display: inline-block; border: 0; border-radius: var(--raio);
+  padding: 0.65rem 1.1rem; font-size: 1rem; font-weight: 600;
+  cursor: pointer; text-decoration: none; text-align: center;
+}
+.botao-primario { background: var(--cor-primaria); color: #fff; width: 100%; margin-top: 1rem; }
+.botao-primario:hover { background: var(--cor-primaria-escura); }
+.botao-secundario { background: rgba(255, 255, 255, 0.2); color: #fff; padding: 0.4rem 0.8rem; }
+.botao-neutro { background: var(--cor-borda); color: var(--cor-texto); }
+.botao-perigo { background: var(--cor-erro); color: #fff; }
+
+/* ── Avisos (mensagens da ERSw) ────────────────────────────────────────── */
+.aviso { padding: 0.7rem 1rem; border-radius: var(--raio); font-weight: 600; }
+.aviso-erro { background: var(--cor-erro-fundo); color: var(--cor-erro); }
+.aviso-sucesso { background: var(--cor-sucesso-fundo); color: var(--cor-sucesso); }
+
+/* ── Ficha (dl) e pauta ────────────────────────────────────────────────── */
+.ficha { display: grid; grid-template-columns: 1fr; gap: 0.1rem; margin: 0; }
+.ficha dt { font-weight: 600; color: var(--cor-texto-suave); margin-top: 0.5rem; }
+.ficha dd { margin: 0; }
+
+.item-pauta { border-bottom: 1px solid var(--cor-borda); padding: 0.5rem 0; }
+.item-pauta:last-child { border-bottom: 0; }
+.item-pauta p { margin: 0.2rem 0; color: var(--cor-texto-suave); }
+.anexo { font-size: 0.9rem; color: var(--cor-texto-suave); }
+
+/* ── Tabelas (com rolagem horizontal no celular) ───────────────────────── */
+.rolagem { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.tabela { width: 100%; border-collapse: collapse; font-size: 0.95rem; min-width: 560px; }
+.tabela th, .tabela td {
+  text-align: left; padding: 0.5rem 0.4rem;
+  border-bottom: 1px solid var(--cor-borda); vertical-align: top;
+}
+.tabela th { color: var(--cor-texto-suave); font-size: 0.85rem; text-transform: uppercase; }
+
+/* ── Etiquetas de status ───────────────────────────────────────────────── */
+.etiqueta {
+  display: inline-block; padding: 0.1rem 0.55rem; border-radius: 999px;
+  font-size: 0.8rem; font-weight: 700; white-space: nowrap;
+}
+.etiqueta-configurada { background: #fef9c3; color: #854d0e; }
+.etiqueta-ativa { background: var(--cor-sucesso-fundo); color: var(--cor-sucesso); }
+.etiqueta-encerrada { background: var(--cor-borda); color: var(--cor-texto-suave); }
+
+/* ── Comandos de tabela e ações de formulário ──────────────────────────── */
+.acoes { display: flex; gap: 0.6rem; margin-top: 1rem; flex-wrap: wrap; }
+.acoes .botao { width: auto; margin-top: 0; }
+.comandos { display: flex; gap: 0.35rem; flex-wrap: wrap; align-items: center; }
+.comandos form { margin: 0; }
+.botao-mini { padding: 0.3rem 0.6rem; font-size: 0.85rem; }
+.dica { color: var(--cor-texto-suave); margin-top: 0.75rem; }
+
+/* ── Indicadores da condução (UC5) ─────────────────────────────────────── */
+.indicadores {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+.indicador {
+  background: var(--cor-fundo); border: 1px solid var(--cor-borda);
+  border-radius: var(--raio); padding: 0.6rem; text-align: center;
+}
+.indicador-rotulo { display: block; font-size: 0.8rem; color: var(--cor-texto-suave); }
+.indicador-valor { display: block; font-size: 1.4rem; font-weight: 700; }
+
+/* ── Opções de voto (UC5 — proprietário) ───────────────────────────────── */
+.opcoes-voto { border: 1px solid var(--cor-borda); border-radius: var(--raio); padding: 0.75rem; }
+.opcoes-voto legend { font-weight: 600; padding: 0 0.3rem; }
+.opcao-voto {
+  display: flex; align-items: center; gap: 0.6rem;
+  padding: 0.55rem 0.4rem; font-weight: 400; margin: 0;
+  border-bottom: 1px solid var(--cor-borda); cursor: pointer;
+}
+.opcao-voto:last-child { border-bottom: 0; }
+.opcao-voto input { width: auto; }
+
+/* ── Telas maiores ─────────────────────────────────────────────────────── */
+@media (min-width: 640px) {
+  .ficha { grid-template-columns: max-content 1fr; column-gap: 1.25rem; }
+  .botao-primario { width: auto; }
+}

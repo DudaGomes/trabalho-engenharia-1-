@@ -1,0 +1,88 @@
+{# Tela de Votação em Andamento — Proprietário (protótipo do UC5, ERSw 3.4.5):
+   pergunta, tempo restante, "Peso do seu voto" e opções. #}
+{% extends "base.html" %}
+{% block titulo %}Votação em Andamento{% endblock %}
+
+{% block conteudo %}
+<section class="cartao">
+  <h1>Votação em Andamento</h1>
+  <dl class="ficha">
+    <dt>Pergunta</dt><dd>{{ votacao.pergunta }}</dd>
+    {% if votacao.status == StatusVotacao.ATIVA %}
+    <dt>Tempo restante</dt><dd><strong id="cronometro">--:--</strong></dd>
+    {% else %}
+    <dt>Status</dt>
+    <dd><span class="etiqueta etiqueta-{{ votacao.status | lower }}">{{ votacao.status.title() }}</span></dd>
+    {% endif %}
+    {% if participacao %}
+    <dt>Peso do seu voto</dt>
+    <dd><strong>{{ participacao.peso_fixado | peso_br }}</strong>
+        <small>(soma dos lotes {{ lotes }})</small></dd>
+    {% endif %}
+  </dl>
+
+  {% if votacao.status == StatusVotacao.ENCERRADA %}
+    <p class="aviso aviso-erro">Votação encerrada</p>
+    <a class="botao botao-primario"
+       href="{{ url_for('resultados.resultado', votacao_id=votacao.id) }}">Ver Resultado</a>
+
+  {% elif votacao.status == StatusVotacao.CONFIGURADA %}
+    <p class="aviso aviso-erro">Votação ainda não foi liberada</p>
+
+  {% elif participacao is none %}
+    {# RN2 — não consta na lista fixa de aptos: comando Confirmar Voto bloqueado #}
+    <p class="aviso aviso-erro">Você não está apto a votar nesta votação</p>
+
+  {% elif participacao.data_hora_participacao %}
+    {# RN4 — voto único: o voto anterior permanece válido #}
+    <p class="aviso aviso-sucesso">Seu voto já foi registrado</p>
+
+  {% else %}
+    <form method="post" action="{{ url_for('votacoes.confirmar_voto', votacao_id=votacao.id) }}">
+      <fieldset class="opcoes-voto">
+        <legend>Escolha uma opção</legend>
+        {% for opcao in opcoes %}
+        <label class="opcao-voto">
+          <input type="radio" name="opcao_voto_id" value="{{ opcao.id }}" required>
+          {{ opcao.texto }}
+        </label>
+        {% endfor %}
+      </fieldset>
+      <div class="acoes">
+        <button type="submit" class="botao botao-primario">Confirmar Voto</button>
+        {# RN9 — Voltar retorna sem salvar #}
+        <a class="botao botao-neutro" href="{{ url_for('autenticacao.painel') }}">Voltar</a>
+      </div>
+    </form>
+  {% endif %}
+</section>
+
+{% if votacao.status == StatusVotacao.ATIVA %}
+<script>
+  // Comportamento de TELA: cronômetro regressivo. A autoridade sobre o
+  // encerramento é do servidor (RN8) — voto tardio é rejeitado lá.
+  let restante = {{ segundos_restantes }};
+  const cronometro = document.getElementById('cronometro');
+
+  function exibir() {
+    const m = String(Math.floor(restante / 60)).padStart(2, '0');
+    const s = String(restante % 60).padStart(2, '0');
+    cronometro.textContent = `${m}:${s}`;
+  }
+
+  setInterval(() => {
+    if (restante > 0) { restante--; exibir(); }
+    else window.location.reload();  // tempo zerou: recarrega e exibe o estado real
+  }, 1000);
+  exibir();
+
+  // sincroniza o relógio com o servidor e detecta encerramento manual
+  setInterval(async () => {
+    const resposta = await fetch('{{ url_for("votacoes.estado", votacao_id=votacao.id) }}');
+    const estado = await resposta.json();
+    restante = estado.segundos_restantes;
+    if (estado.status !== 'ATIVA') window.location.reload();
+  }, 3000);
+</script>
+{% endif %}
+{% endblock %}

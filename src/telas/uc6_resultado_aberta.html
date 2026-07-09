@@ -1,0 +1,39 @@
+{# Tela de Resultado — Votação Aberta (protótipo do UC6, ERSw 3.4.6):
+   apuração por peso + relação nominal (RN5 permite na votação aberta). #}
+{% extends "base.html" %}
+{% from "uc6_macros.html" import cabecalho, tabela_apuracao with context %}
+{% block titulo %}Resultado da Votação (Aberta){% endblock %}
+
+{% block conteudo %}
+{{ cabecalho('Resultado da Votação (Aberta)') }}
+{{ tabela_apuracao('Apuração por peso', true) }}
+
+<section class="cartao">
+  <h2>Voto nominal</h2>
+  {% if relacao_nominal %}
+  <div class="rolagem">
+  <table class="tabela">
+    <thead>
+      <tr><th>Proprietário</th><th>Lote(s)</th><th>Voto</th><th>Peso</th></tr>
+    </thead>
+    <tbody>
+      {% for linha in relacao_nominal %}
+      <tr>
+        <td>{{ linha.nome }}</td>
+        <td>{{ linha.lotes }}</td>
+        <td>{{ linha.voto }}</td>
+        <td>{{ linha.peso | peso_br }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+  <p>Nenhum voto registrado.</p>
+  {% endif %}
+</section>
+
+<div class="acoes">
+  <a class="botao botao-neutro" href="{{ url_for('autenticacao.painel') }}">Voltar</a>
+</div>
+{% endblock %}

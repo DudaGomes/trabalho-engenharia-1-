@@ -1,0 +1,52 @@
+{# Blocos comuns às telas de resultado (protótipos do UC6, ERSw 3.4.6):
+   cabeçalho da votação (quórum e resultado final) e apuração por peso.
+   Importado com contexto por uc6_resultado_aberta e uc6_resultado_fechada. #}
+
+{% macro cabecalho(titulo_tela) %}
+<section class="cartao">
+  <h1>{{ titulo_tela }}</h1>
+  <dl class="ficha">
+    <dt>Pergunta</dt><dd>{{ votacao.pergunta }}</dd>
+    <dt>Tipo / Visibilidade</dt>
+    <dd>{{ ROTULOS_TIPO[votacao.tipo_resposta] }} — {{ ROTULOS_VISIBILIDADE[votacao.visibilidade] }}</dd>
+    <dt>Peso apto / participante</dt>
+    <dd>{{ resultado.peso_total_apto | peso_br }} / {{ resultado.peso_participante | peso_br }}</dd>
+    <dt>Quórum</dt>
+    <dd>{{ '%g' | format(resultado.percentual_participacao) | replace('.', ',') }}%
+        (mínimo {{ '%g' | format(votacao.quorum_minimo) | replace('.', ',') }}%) —
+        <strong>{{ 'Atingido' if quorum_atingido else 'Não atingido' }}</strong></dd>
+    <dt>Resultado final</dt>
+    <dd><strong>{{ resultado.status }} — {{ rotulo_final }}{% if vencedora %}
+        (opção vencedora: {{ vencedora.texto }}){% endif %}</strong>
+        {% if empatadas %}<br><small>Empate entre: {{ empatadas | join(' · ') }}</small>{% endif %}</dd>
+  </dl>
+</section>
+{% endmacro %}
+
+{% macro tabela_apuracao(titulo, com_quantidade) %}
+<section class="cartao">
+  <h2>{{ titulo }}</h2>
+  <div class="rolagem">
+  <table class="tabela">
+    <thead>
+      <tr>
+        <th>Opção</th>
+        {% if com_quantidade %}<th>Votos (qtd.)</th>{% endif %}
+        <th>Peso computado</th>
+        <th>% por peso</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for linha in apuracao %}
+      <tr>
+        <td>{{ linha.texto }}</td>
+        {% if com_quantidade %}<td>{{ linha.quantidade }}</td>{% endif %}
+        <td>{{ linha.peso | peso_br }}</td>
+        <td>{{ '%.1f' | format(linha.percentual) | replace('.', ',') }}%</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</section>
+{% endmacro %}

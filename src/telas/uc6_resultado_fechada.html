@@ -1,0 +1,41 @@
+{# Tela de Resultado — Votação Fechada (protótipo do UC6, ERSw 3.4.6):
+   apuração consolidada + relação de participantes SEM a escolha individual
+   (RN5/RNF5 — o sigilo é estrutural: voto.usuario_id é NULL no banco). #}
+{% extends "base.html" %}
+{% from "uc6_macros.html" import cabecalho, tabela_apuracao with context %}
+{% block titulo %}Resultado da Votação (Fechada){% endblock %}
+
+{% block conteudo %}
+{{ cabecalho('Resultado da Votação (Fechada)') }}
+{{ tabela_apuracao('Apuração consolidada por peso', false) }}
+
+<section class="cartao">
+  <h2>Participantes da votação (sem escolha individual)</h2>
+  <p class="dica">{{ participantes | length }} proprietário(s) votaram
+     (peso {{ resultado.peso_participante | peso_br }}). A relação abaixo não
+     apresenta a opção escolhida por nenhum participante.</p>
+  {% if participantes %}
+  <div class="rolagem">
+  <table class="tabela">
+    <thead>
+      <tr><th>Proprietário</th><th>Lote(s)</th><th>Peso participante</th><th>Horário</th></tr>
+    </thead>
+    <tbody>
+      {% for linha in participantes %}
+      <tr>
+        <td>{{ linha.nome }}</td>
+        <td>{{ linha.lotes }}</td>
+        <td>{{ linha.peso | peso_br }}</td>
+        <td>{{ linha.horario }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% endif %}
+</section>
+
+<div class="acoes">
+  <a class="botao botao-neutro" href="{{ url_for('autenticacao.painel') }}">Voltar</a>
+</div>
+{% endblock %}

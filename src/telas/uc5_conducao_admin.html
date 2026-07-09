@@ -1,0 +1,93 @@
+{# Tela de Condução da Votação — Administrador (protótipo do UC5, ERSw 3.4.5).
+   Acompanhamento em tempo real: peso apto, peso participante, votaram /
+   não votaram e cronômetro regressivo. #}
+{% extends "base.html" %}
+{% block titulo %}Condução da Votação{% endblock %}
+
+{% block conteudo %}
+<section class="cartao">
+  <h1>Condução da Votação — Administrador</h1>
+  <dl class="ficha">
+    <dt>Pergunta</dt><dd>{{ votacao.pergunta }}</dd>
+    <dt>Tipo / Visibilidade</dt>
+    <dd>{{ ROTULOS_TIPO[votacao.tipo_resposta] }} — {{ votacao.visibilidade.title() }}</dd>
+    <dt>Quórum mínimo</dt><dd>{{ '%g' | format(votacao.quorum_minimo) }}%</dd>
+    <dt>Status</dt>
+    <dd>
+      <span class="etiqueta etiqueta-{{ votacao.status | lower }}" id="status">{{ votacao.status.title() }}</span>
+      {% if votacao.status == StatusVotacao.ATIVA %}
+      &nbsp;|&nbsp; Tempo restante: <strong id="cronometro">--:--</strong>
+      {% endif %}
+    </dd>
+  </dl>
+</section>
+
+<section class="cartao">
+  <h2>Acompanhamento em tempo real</h2>
+  <div class="indicadores">
+    <div class="indicador">
+      <span class="indicador-rotulo">Peso total apto</span>
+      <span class="indicador-valor" id="peso-apto">{{ totais.peso_total_apto | peso_br }}</span>
+    </div>
+    <div class="indicador">
+      <span class="indicador-rotulo">Peso participante</span>
+      <span class="indicador-valor" id="peso-participante">{{ totais.peso_participante | peso_br }}</span>
+    </div>
+    <div class="indicador">
+      <span class="indicador-rotulo">Votaram</span>
+      <span class="indicador-valor" id="votaram">{{ totais.total_votaram }}</span>
+    </div>
+    <div class="indicador">
+      <span class="indicador-rotulo">Não votaram</span>
+      <span class="indicador-valor" id="nao-votaram">{{ totais.total_aptos - totais.total_votaram }}</span>
+    </div>
+  </div>
+
+  <div class="acoes">
+    {% if votacao.status == StatusVotacao.ATIVA %}
+    {# RN8 — o administrador pode encerrar manualmente antes do fim #}
+    <form method="post" action="{{ url_for('votacoes.encerrar', votacao_id=votacao.id) }}"
+          onsubmit="return confirm('Encerrar a votação agora?')">
+      <button type="submit" class="botao botao-perigo">Encerrar</button>
+    </form>
+    {% elif votacao.status == StatusVotacao.ENCERRADA %}
+    <a class="botao botao-primario"
+       href="{{ url_for('resultados.resultado', votacao_id=votacao.id) }}">Ver Resultado</a>
+    {% endif %}
+    <a class="botao botao-neutro"
+       href="{{ url_for('votacoes.tela_nova', reuniao_id=votacao.reuniao_id) }}">Voltar</a>
+  </div>
+</section>
+
+{% if votacao.status == StatusVotacao.ATIVA %}
+<script>
+  // Comportamento de TELA: cronômetro local + sincronização com o servidor.
+  // A autoridade sobre o encerramento é sempre do servidor (RN8).
+  let restante = {{ segundos_restantes }};
+  const cronometro = document.getElementById('cronometro');
+
+  function exibir() {
+    const m = String(Math.floor(restante / 60)).padStart(2, '0');
+    const s = String(restante % 60).padStart(2, '0');
+    cronometro.textContent = `${m}:${s}`;
+  }
+
+  setInterval(() => { if (restante > 0) { restante--; exibir(); } }, 1000);
+  exibir();
+
+  const pesoBr = (v) => Number(v).toFixed(2).replace('.', ',');
+
+  async function sincronizar() {
+    const resposta = await fetch('{{ url_for("votacoes.estado", votacao_id=votacao.id) }}');
+    const estado = await resposta.json();
+    restante = estado.segundos_restantes;
+    document.getElementById('peso-apto').textContent = pesoBr(estado.peso_total_apto);
+    document.getElementById('peso-participante').textContent = pesoBr(estado.peso_participante);
+    document.getElementById('votaram').textContent = estado.votaram;
+    document.getElementById('nao-votaram').textContent = estado.nao_votaram;
+    if (estado.status !== 'ATIVA') window.location.reload();  // encerrou
+  }
+  setInterval(sincronizar, 3000);
+</script>
+{% endif %}
+{% endblock %}

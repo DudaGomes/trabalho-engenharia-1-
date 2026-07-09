@@ -1,0 +1,5 @@
+.venv/
+__pycache__/
+*.pyc
+pac.db
+.DS_Store

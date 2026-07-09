@@ -367,17 +367,4 @@ violação para a mensagem oficial "Seu voto já foi registrado".
 
 ---
 
-## 10. Divisão da apresentação (3 apresentadores)
 
-A organização em camadas e em pastas por caso de uso foi desenhada para que o trabalho se
-divida em **três blocos coesos e de peso equilibrado**, um por apresentador. Cada bloco tem
-início, meio e fim na demonstração ao vivo e um conjunto próprio de arquivos para apontar.
-
-| Bloco | Conteúdo | Arquivos principais | Momento da demo |
-|---|---|---|---|
-| **Apresentador 1 — Fundações e Entrada** | Visão geral e arquitetura em camadas (seções 1–7 deste documento); modelo de dados e constraints (RN4/RN5 no banco); seed; **UC1 — Entrar no sistema** (RF9/RNF4) | `docs/ARQUITETURA.md` · `src/config/` · `src/modelos/` · `seed/popular_banco.py` · `casos_de_uso/uc1_autenticacao/` · `telas/login.html`, `painel.html` | Roda o seed, mostra o esquema, faz login como admin e como proprietário (inclusive o erro "E-mail ou senha incorretos") |
-| **Apresentador 2 — Votação: criação e execução** | **UC4 — Criar votação** (RF5: 3 tipos, visibilidade, duração RN8, Salvar ≠ Iniciar RN3) e **UC5 — Executar votação** (RF6: Iniciar congela aptos/pesos RN1/RN2, cronômetro, voto único RN4, fluxos de erro) | `casos_de_uso/uc4_criar_votacao/` · `casos_de_uso/uc5_executar_votacao/` · `telas/uc4_configurar_votacao.html`, `uc5_conducao_admin.html`, `uc5_votacao_proprietario.html` | Cria os 3 tipos de votação, inicia (mostrando Maria com peso 2,40 e o proprietário sem lote fora dos aptos), vota, provoca "Seu voto já foi registrado" e a trava de 2ª votação ATIVA |
-| **Apresentador 3 — Resultado, sigilo e encerramento** | **UC6 — Verificar o resultado** (RF7: apuração RN6, quórum, CONCLUIDO/EMPATE/SEM_QUORUM); sigilo da votação fechada (RN5/RNF5, seção 9); encerramento manual/automático (RN8) | `casos_de_uso/uc6_resultado/` · `casos_de_uso/uc5_executar_votacao/encerrar.py` · `telas/uc6_resultado_aberta.html`, `uc6_resultado_fechada.html` · seção 9 deste documento | Encerra a votação, mostra resultado ABERTA (nominal) vs FECHADA (participantes sem escolha, com prova no banco: `usuario_id NULL`), demonstra EMPATE e SEM_QUORUM |
-
-A fronteira entre os blocos coincide com fronteiras de pasta: nenhum arquivo pertence a
-dois apresentadores.
